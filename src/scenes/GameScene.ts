@@ -70,15 +70,29 @@ export default class GameScene extends Phaser.Scene {
 
   private spawnEnemy() {
     const y = Phaser.Math.Between(20, this.scale.height - 20);
+
+    // 15%の確率でenemy2をスポーン、85%の確率でenemy
+    const enemyType = Math.random() < 0.15 ? 'enemy2' : 'enemy';
+    
     const enemy = this.enemies.get(
       this.scale.width + 20,
       y,
-      'enemy'
+      enemyType
     ) as Phaser.Physics.Arcade.Image;
+
     if (!enemy) return;
     enemy.enableBody(true, this.scale.width + 20, y, true, true);
-    enemy.setVelocityX(-150 - Math.random() * 80);
-    enemy.setCircle(8, 0, 0);
+    
+    // enemy2は少し遅いが、より多くのポイント
+    if (enemyType === 'enemy2') {
+      enemy.setVelocityX(-100 - Math.random() * 50);
+      enemy.setCircle(12, 0, 0); // 少し大きめの当たり判定
+      enemy.setData('scoreValue', 25); // より高いスコア
+    } else {
+      enemy.setVelocityX(-150 - Math.random() * 80);
+      enemy.setCircle(8, 0, 0);
+      enemy.setData('scoreValue', 10); // 通常のスコア
+    }
   }
 
   private hitEnemy = (
@@ -89,16 +103,23 @@ export default class GameScene extends Phaser.Scene {
     const e = enemy as Phaser.Physics.Arcade.Image;
     b.disableBody(true, true);
     e.disableBody(true, true);
-    this.score += 10;
+    
+    // enemy2かどうかでスコアを変更
+    const scoreValue = e.getData('scoreValue') || 10;
+    this.score += scoreValue;
     this.scoreText.setText(`SCORE ${this.score}`);
 
-    // 爆発エフェクト（簡易）
-    const boom = this.add.circle(e.x, e.y, 2, 0xffe066);
+    // enemy2の場合はより派手な爆発エフェクト
+    const isEnemy2 = scoreValue > 10;
+    const explosionColor = isEnemy2 ? 0xff6600 : 0xffe066;
+    const explosionSize = isEnemy2 ? 20 : 16;
+    
+    const boom = this.add.circle(e.x, e.y, 2, explosionColor);
     this.tweens.add({
       targets: boom,
-      radius: 16,
+      radius: explosionSize,
       alpha: 0,
-      duration: 220,
+      duration: isEnemy2 ? 300 : 220,
       onComplete: () => boom.destroy(),
     });
   };

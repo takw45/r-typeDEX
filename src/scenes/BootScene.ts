@@ -55,6 +55,14 @@ export default class BootScene extends Phaser.Scene {
     enemy.generateTexture('enemy', 16, 16);
     enemy.destroy();
 
+    const enemy2 = this.add.graphics();
+    enemy2.fillStyle(0xff4d4f, 1);
+    enemy2.fillTriangle(28, -12, 28, 12, 0, 0);
+    enemy2.lineStyle(2, 0xffffff, 1);
+    enemy2.strokeTriangle(28, -12, 28, 12, 0, 0);
+    enemy2.generateTexture('enemy2', 16, 16);
+    enemy2.destroy();
+
     this.scene.start('Game');
   }
 }
